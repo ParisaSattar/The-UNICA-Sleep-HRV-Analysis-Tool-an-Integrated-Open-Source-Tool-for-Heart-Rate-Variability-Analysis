@@ -152,9 +152,33 @@ ECG_filename= strcat(pathname_ECG,ECG_files);
 
             
     else
-        data_ECG=load(ECG_filename);
-        data_ECG=struct2cell(data_ECG);
-        data_ECG=data_ECG{1};
+    [~, ~, ext_new] = fileparts(ECG_filename);
+        switch ext_new
+            case {'.xlsx', '.xls'}
+                % Excel files
+                data_ECG = readmatrix(ECG_filename);
+                
+            case '.csv'
+                % CSV files
+                data_ECG = readmatrix(ECG_filename);
+                
+            case '.txt'
+                % Text files - try readmatrix first, then load
+                try
+                    data_ECG = readmatrix(ECG_filename);
+                catch
+                    data_ECG = load(ECG_filename);
+                end
+                
+            case '.mat'
+                % MAT files
+                temp = load(ECG_filename);
+                fields = fieldnames(temp);
+                data_ECG = temp.(fields{1});
+        end
+        %data_ECG=load(ECG_filename);
+        %data_ECG=struct2cell(data_ECG);
+        %data_ECG=data_ECG{1};
         figWidth = 600;
         figHeight = 190;
         figX = selectedScreen(1) + (selectedScreen(3) - figWidth) / 2;
